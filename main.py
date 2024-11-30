@@ -28,13 +28,13 @@ async def root():
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    model_name="text-embedding-3-small",
+    model_name="text-embedding-3-large",
     api_key = OPENAI_API_KEY
 )
 
 # Initialize PersistentClient and create or retrieve collection
 client = chromadb.PersistentClient(path="chromadb")
-collection = client.get_or_create_collection(name="title", embedding_function=openai_ef, metadata={"hnsw:space": "cosine"})
+collection = client.get_or_create_collection(name="title_embed", embedding_function=openai_ef, metadata={"hnsw:space": "cosine"})
 
 # Define the model for the input (request body)
 class SearchQuery(BaseModel):
@@ -49,7 +49,7 @@ async def video_search(query: SearchQuery):
         # Perform ChromaDB query to get similar embeddings
         results = collection.query(
             query_texts=[search_text],
-            n_results=6  # Return the most similar result (adjust as needed)
+            n_results=7  # Return the most similar result (adjust as needed)
         )
 
         # Print results for debugging
@@ -61,7 +61,7 @@ async def video_search(query: SearchQuery):
             final_title = []
             for index in range(len(distances)):
                 print("check index: ", distances[index])
-                if distances[index] < 0.7:
+                if distances[index] < 0.77:
                     final_title.append(documents[index])
 
             print("check title: ", final_title)
